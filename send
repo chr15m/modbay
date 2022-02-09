@@ -1,0 +1,11 @@
+#!/bin/sh
+
+if [ "$1" = "" ]
+then
+  echo "Usage:"
+  echo "  send loop loops/name.wav 16"
+  echo "  send bpm 180"
+  echo "  send play 1"
+else
+  echo "$@;" | nc -u -q 1 localhost 1232
+fi
