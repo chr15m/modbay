@@ -3,6 +3,12 @@
 import curses
 from sys import exit
 from os import listdir
+from time import sleep
+
+import socket
+
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, 0)
+s.connect(("127.0.0.1", 1232))
 
 logfile = open("log", "a")
 
@@ -36,6 +42,11 @@ def test_func(k, ml):
 def callback(*args):
     print("callback", args)
 
+def loop_selected(loops, values):
+    msg = "loop " + "loops/" + loops[values[0]] + ";\n"
+    log(msg)
+    s.send(msg.encode("utf8"))
+
 def makeform(app, selected=0):
         # These lines create the form and populate it with widgets.
         # A fairly complex screen in only 8 or so lines of code - a line for each control.
@@ -66,7 +77,7 @@ def makeform(app, selected=0):
 
         ms = F.add(npyscreen.TitleSelectOne, max_height=4, value = [1,], name="Loop",
                 values = loops, scroll_exit=True)
-        ms.when_value_edited=lambda: log("changed", ms.value)
+        ms.when_value_edited=lambda: loop_selected(loops, ms.value)
 
         quit = F.add(npyscreen.ButtonPress, name = "quit", when_pressed_function = lambda: app.exit_application())
 
@@ -90,6 +101,7 @@ class TestApp(npyscreen.NPSApp):
         #self.setNextForm(None)
         #self.NEXT_ACTIVE_FORM = None
         #self.editing = False
+        s.close()
         exit()
 
 if __name__ == "__main__":
