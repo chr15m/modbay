@@ -1,6 +1,11 @@
 #!/bin/bash
 
-py=$( `command -v ./virtualenv/bin/python` || echo "python" )
+if [ -f "../../virtualenv/bin/python" ]
+then
+  py=../../virtualenv/bin/python
+else
+  py=python3
+fi
 
 pd -nogui -audiobuf 50 _main.pd &
 pdpid=$!
