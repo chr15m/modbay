@@ -42,6 +42,11 @@ def test_func(k, ml):
 def callback(*args):
     print("callback", args)
 
+def send(msg):
+    msg = msg + ";\n"
+    log(msg)
+    s.send(msg.encode("utf8"))
+
 def loop_selected(loops, values):
     msg = "loop " + "loops/" + loops[values[0]] + ";\n"
     log(msg)
@@ -68,15 +73,14 @@ def makeform(app, selected=0):
         #fn = F.add(npyscreen.TitleFilename, name = "Filename:")
         #fn2 = F.add(npyscreen.TitleFilenameCombo, name="Filename2:")
         #dt = F.add(npyscreen.TitleDateCombo, name = "Date:")
-        #s  = F.add(npyscreen.TitleSlider, out_of=12, name = "Slider")
-        #s.when_value_edited=lambda: log("moved", s.value)
+        s  = F.add(npyscreen.TitleSlider, out_of=4, name = "Volume", value=2)
+        s.when_value_edited=lambda: send("volume " + str(s.value))
 
         #ml = F.add(npyscreen.MultiLineEdit, value="", max_height=5)
 
         loops = [l for l in listdir("loops") if l.endswith(".wav")]
 
-        ms = F.add(npyscreen.TitleSelectOne, max_height=4, value = [1,], name="Loop",
-                values = loops, scroll_exit=True)
+        ms = F.add(npyscreen.TitleSelectOne, max_height=8, value = [0,], name="Loop", values = loops, scroll_exit=True)
         ms.when_value_edited=lambda: loop_selected(loops, ms.value)
 
         quit = F.add(npyscreen.ButtonPress, name = "quit", when_pressed_function = lambda: app.exit_application())
