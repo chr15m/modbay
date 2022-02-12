@@ -73,9 +73,6 @@ def makeform(app, selected=0):
         #fn = F.add(npyscreen.TitleFilename, name = "Filename:")
         #fn2 = F.add(npyscreen.TitleFilenameCombo, name="Filename2:")
         #dt = F.add(npyscreen.TitleDateCombo, name = "Date:")
-        s  = F.add(npyscreen.TitleSlider, out_of=4, name = "Volume", value=2)
-        s.when_value_edited=lambda: send("volume " + str(s.value))
-
         #ml = F.add(npyscreen.MultiLineEdit, value="", max_height=5)
 
         loops = [l for l in listdir("loops") if l.endswith(".wav")]
@@ -83,6 +80,12 @@ def makeform(app, selected=0):
         ms = F.add(npyscreen.TitleSelectOne, max_height=8, value = [0,], name="Loop", values = loops, scroll_exit=True)
         ms.when_value_edited=lambda: loop_selected(loops, ms.value)
 
+        s  = F.add(npyscreen.TitleSlider, out_of=4, name = "Volume", value=2)
+        s.when_value_edited=lambda: send("volume " + str(s.value))
+
+        ms1 = F.add(npyscreen.TitleMultiSelect, max_height =-2, value = [], name="Stick", values=["<-"], scroll_exit=True)
+        ms1.when_value_edited=lambda: send("sticky " + str(0 in ms1.value and 1 or 0))
+        
         quit = F.add(npyscreen.ButtonPress, name = "quit", when_pressed_function = lambda: app.exit_application())
 
         #ms2= F.add(npyscreen.TitleMultiSelect, max_height =-2, value = [1,], name="Pick Several",
