@@ -83,6 +83,9 @@ def makeform(app, selected=0):
         s  = F.add(npyscreen.TitleSlider, out_of=4, name = "Volume", value=2)
         s.when_value_edited=lambda: send("volume " + str(s.value))
 
+        s2  = F.add(npyscreen.TitleSlider, out_of=4, name = "Ticks", value=1)
+        s2.when_value_edited=lambda: send("divider " + str(pow(2, s2.value)))
+
         ms1 = F.add(npyscreen.TitleMultiSelect, max_height =-2, value = [], name="Stick", values=["<-"], scroll_exit=True)
         ms1.when_value_edited=lambda: send("sticky " + str(0 in ms1.value and 1 or 0))
         
