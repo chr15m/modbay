@@ -73,7 +73,7 @@ def get_info(mod):
 
 def make_mod_files(mod, info):
     for i in range(info[0]):
-        log(run("xmp -S " + str(i) + " " + modspath + "/" + mod + " --nocmd -o /tmp/fakeboy/" + str(i) + ".wav").decode("utf8"))
+        log(run("xmp -S " + str(i) + " " + modspath + "/" + mod + " --nocmd -a 1 -o /tmp/fakeboy/" + str(i) + ".wav").decode("utf8"))
 
 def exitform(F):
     F.editing = False
@@ -81,6 +81,8 @@ def exitform(F):
 def makemodform(info, mod):
     F = MyForm(name=mod, minimum_columns=20, minimum_lines=20)
     #app.F = F
+    c = F.add(npyscreen.Checkbox, value=False, name="play")
+    c.whenToggled = lambda: send("play " + str(c.value and 1 or 0))
     ml = F.add(npyscreen.MultiLineEdit, value=info[1], max_height=10)
     quit = F.add(npyscreen.ButtonPress, name = "back", when_pressed_function = lambda: exitform(F))
     F.edit()
@@ -94,7 +96,7 @@ def start_mod(mods, mod, F):
     #F.DISPLAY()
     send("reset")
     for i in range(info[0]):
-        send(str(i) + " loop /tmp/fakeboy/" + str(i) + ".wav")
+        send("channel " + str(i) + " loop /tmp/fakeboy/" + str(i) + ".wav")
     makemodform(info, mod)
 
 def makeform(app, selected=0):
@@ -122,7 +124,7 @@ def makeform(app, selected=0):
         #dt = F.add(npyscreen.TitleDateCombo, name = "Date:")
         #ml = F.add(npyscreen.MultiLineEdit, value="", max_height=5)
 
-        F.add(npyscreen.TitleText, name = "Mods:")
+        F.add(npyscreen.FixedText, value="Mods:")
 
         mods = []
         mods = [m for m in listdir("mods") if splitext(m)[1] in [".it", ".xm", ".mod"]]
@@ -166,6 +168,8 @@ class TestApp(npyscreen.NPSApp):
         #self.setNextForm(None)
         #self.NEXT_ACTIVE_FORM = None
         #self.editing = False
+        send("reset")
+        sleep(0.1)
         s.close()
         exit()
 
