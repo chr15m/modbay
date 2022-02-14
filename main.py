@@ -3,17 +3,23 @@
 import curses
 import re
 from sys import exit, argv
-from os import listdir
+from os import listdir, mkdir
 from os.path import splitext
 from time import sleep
 from subprocess import check_output, STDOUT
-
+import npyscreen
 import socket
 
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, 0)
 s.connect(("127.0.0.1", 1232))
 
 logfile = open("log", "a")
+
+wavtmp = "/tmp/fakeboy"
+try:
+    mkdir(wavtmp)
+except FileExistsError:
+    pass
 
 modspath = None
 
@@ -23,8 +29,6 @@ def log(*msg):
 
 def run(cmd):
     return check_output(cmd, stderr=STDOUT, shell=True)
-
-import npyscreen
 
 class MyForm(npyscreen.FormBaseNew):
     def while_editing(form, thing):
@@ -56,15 +60,20 @@ def send(msg):
     s.send(msg.encode("utf8"))
 
 def loop_selected(loops, values):
-    msg = "loop " + "loops/" + loops[values[0]] + ";\n"
-    log(msg)
-    s.send(msg.encode("utf8"))
+    msg = "loop " + "loops/" + loops[values[0]]
+    send(msg)
 
 def get_info(mod):
     info = run("xmp --load-only -C " + modspath + "/" + mod).decode("utf8")
-    channels = re.findall("Channels\ +: (\d+)", info)[0]
-    comments = "\n".join(re.findall("> (.*?)[\n$]", info))
+    channels = int(re.findall("Channels\ +: (\d+)", info)[0])
+    commentlines = re.findall("> (.*?)[\n$]", info)
+    log(commentlines)
+    comments = "\n".join(commentlines)
     return [channels, comments]
+
+def make_mod_files(mod, info):
+    for i in range(info[0]):
+        log(run("xmp -S " + str(i) + " " + modspath + "/" + mod + " --nocmd -o /tmp/fakeboy/" + str(i) + ".wav").decode("utf8"))
 
 def exitform(F):
     F.editing = False
@@ -72,6 +81,7 @@ def exitform(F):
 def makemodform(info, mod):
     F = MyForm(name=mod, minimum_columns=20, minimum_lines=20)
     #app.F = F
+    ml = F.add(npyscreen.MultiLineEdit, value=info[1], max_height=10)
     quit = F.add(npyscreen.ButtonPress, name = "back", when_pressed_function = lambda: exitform(F))
     F.edit()
 
@@ -79,9 +89,13 @@ def start_mod(mods, mod, F):
     # extract the notes
     info = get_info(mod)
     log("Loading mod:", info)
+    make_mod_files(mod, info)
     #F.editing = False
-    makemodform(info, mod)
     #F.DISPLAY()
+    send("reset")
+    for i in range(info[0]):
+        send(str(i) + " loop /tmp/fakeboy/" + str(i) + ".wav")
+    makemodform(info, mod)
 
 def makeform(app, selected=0):
         # These lines create the form and populate it with widgets.
@@ -95,6 +109,8 @@ def makeform(app, selected=0):
         #F.add_handlers({27: self.exit_application})
         #F.add_handlers({"KEY_F(2)": self.exit_application})
         #F.add_handlers({"^Y": self.exit_application})
+        #F.add_handlers({88: lambda: log("pressed X")})
+        #F.add_handlers({89: lambda: log("pressed Y")})
         #log(F.handlers)
         #F.how_exited_handers[npyscreen.wgwidget.EXITED_ESCAPE]  = self.exit_application
 
