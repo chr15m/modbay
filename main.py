@@ -78,19 +78,35 @@ def make_mod_files(mod, info):
 def exitform(F):
     F.editing = False
 
+def makesender(el, c):
+    def x():
+        send("channel " + str(c) + " volume " + str(el.value and 4 or 0))
+    return x
+
 def makemodform(info, mod):
     F = MyForm(name=mod, minimum_columns=20, minimum_lines=20)
     #app.F = F
-    c = F.add(npyscreen.Checkbox, value=False, name="play")
-    c.whenToggled = lambda: send("play " + str(c.value and 1 or 0))
-    ml = F.add(npyscreen.MultiLineEdit, value=info[1], max_height=10)
+    play = F.add(npyscreen.Checkbox, value=False, name="play")
+    play.whenToggled = lambda: send("play " + str(play.value and 1 or 0))
+    F.nextrely += 1
+
+    for c in range(info[0]):
+        on = F.add(npyscreen.Checkbox, value=True, name="channel " + str(c))
+        on.whenToggled = makesender(on, c)
+    F.nextrely += 1
+
     quit = F.add(npyscreen.ButtonPress, name = "back", when_pressed_function = lambda: exitform(F))
+    F.nextrely += 1
+
+    ml = F.add(npyscreen.MultiLineEdit, value=info[1], max_height=10)
     F.edit()
 
 def start_mod(mods, mod, F):
     # extract the notes
     info = get_info(mod)
     log("Loading mod:", info)
+    npyscreen.blank_terminal()
+    npyscreen.notify("rendering " + str(info[0]) + " channels", title='Rendering')
     make_mod_files(mod, info)
     #F.editing = False
     #F.DISPLAY()
