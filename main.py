@@ -88,6 +88,9 @@ def makemodform(info, mod):
     #app.F = F
     play = F.add(npyscreen.Checkbox, value=False, name="play")
     play.whenToggled = lambda: send("play " + str(play.value and 1 or 0))
+
+    s2  = F.add(npyscreen.TitleSlider, out_of=1, name = "Sync rate", value=0)
+    s2.when_value_edited=lambda: send("sync-div " + str(pow(2, s2.value)))
     F.nextrely += 1
 
     for c in range(info[0]):
