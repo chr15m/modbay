@@ -80,7 +80,7 @@
 #X msg 15 112 read -resize \$2 \$1/storage;
 #X obj 15 40 list trim;
 #X obj 434 48 list prepend \$0;
-#X msg 434 72 \; \$1/storage resize 0;
+#X msg 434 72 \; \$1/storage resize 0 \; \$1/volume 4 \;;
 #X connect 0 0 50 0;
 #X connect 0 1 1 0;
 #X connect 1 0 4 0;
