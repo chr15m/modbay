@@ -73,14 +73,14 @@ def get_info(mod):
 
 def make_mod_files(mod, info):
     for i in range(info[0]):
-        log(run("xmp -S " + str(i) + " " + modspath + "/" + mod + " --nocmd -a 1 -o /tmp/fakeboy/" + str(i) + ".wav").decode("utf8"))
+        log(run("xmp -S " + str(i) + " " + modspath + "/" + mod + " --nocmd -m -a 1 -o /tmp/fakeboy/" + str(i) + ".wav").decode("utf8"))
 
 def exitform(F):
     F.editing = False
 
-def makesender(el, c):
+def makesender(el, c, key, conv):
     def x():
-        send("channel " + str(c) + " volume " + str(el.value and 4 or 0))
+        send("channel " + str(c) + " " + key + " " + conv(el.value))
     return x
 
 def makemodform(info, mod):
@@ -94,11 +94,13 @@ def makemodform(info, mod):
     F.nextrely += 1
 
     for c in range(info[0]):
-        on = F.add(npyscreen.Checkbox, value=True, name="channel " + str(c))
-        on.whenToggled = makesender(on, c)
+        on = F.add(npyscreen.Checkbox, value=True, name="ch " + str(c))
+        on.whenToggled = makesender(on, c, "volume", lambda v: str(v and 4 or 0))
     F.nextrely += 1
 
-    quit = F.add(npyscreen.ButtonPress, name = "back", when_pressed_function = lambda: exitform(F))
+    for c in range(info[0]):
+        pan = F.add(npyscreen.Checkbox, value=True, name="left " + str(c))
+        pan.whenToggled = makesender(pan, c, "pan", lambda v: str(v and 1 or 0))
     F.nextrely += 1
 
     ml = F.add(npyscreen.MultiLineEdit, value=info[1], max_height=10, editable=False)
