@@ -101,7 +101,10 @@ def makemodform(info, mod):
     quit = F.add(npyscreen.ButtonPress, name = "back", when_pressed_function = lambda: exitform(F))
     F.nextrely += 1
 
-    ml = F.add(npyscreen.MultiLineEdit, value=info[1], max_height=10)
+    ml = F.add(npyscreen.MultiLineEdit, value=info[1], max_height=10, editable=False)
+
+    quit = F.add(npyscreen.ButtonPress, name = "back", when_pressed_function = lambda: exitform(F), rely=-3, relx=-12)
+
     F.edit()
 
 def start_mod(mods, mod, F):
@@ -143,7 +146,7 @@ def makeform(app, selected=0):
         #dt = F.add(npyscreen.TitleDateCombo, name = "Date:")
         #ml = F.add(npyscreen.MultiLineEdit, value="", max_height=5)
 
-        F.add(npyscreen.FixedText, value="Mods:")
+        F.add(npyscreen.FixedText, value="Mods:", editable=False)
 
         mods = []
         mods = [m for m in listdir("mods") if splitext(m)[1] in [".it", ".xm", ".mod"]]
@@ -164,7 +167,7 @@ def makeform(app, selected=0):
         # skip a line
         #F.nextrely += 1
 
-        quit = F.add(npyscreen.ButtonPress, name = "quit", when_pressed_function = lambda: app.exit_application())
+        quit = F.add(npyscreen.ButtonPress, name = "quit", when_pressed_function = lambda: app.exit_application(), rely=-3, relx=-12)
 
         #ms2= F.add(npyscreen.TitleMultiSelect, max_height =-2, value = [1,], name="Pick Several",
         #        values = ["Option1","Option2","Option3"], scroll_exit=True)
