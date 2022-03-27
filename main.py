@@ -3,83 +3,22 @@
 import curses
 import re
 from sys import exit, argv
-from os import listdir, mkdir
+from os import listdir
 from os.path import splitext
 from time import sleep
 from subprocess import check_output, STDOUT
 import npyscreen
-import socket
+from common import MyForm, send, log, s, wavtmp, modspath
 
-s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, 0)
-s.connect(("127.0.0.1", 1232))
-
-logfile = open("log", "a")
-
-wavtmp = "/tmp/fakeboy"
-try:
-    mkdir(wavtmp)
-except FileExistsError:
-    pass
-
-modspath = None
-
-def log(*msg):
-    logfile.write(" ".join([str(i) for i in msg]) + "\n")
-    logfile.flush()
-
-def run(cmd):
-    return check_output(cmd, stderr=STDOUT, shell=True)
-
-class MyForm(npyscreen.FormBaseNew):
-    def while_editing(form, thing):
-        log("while_editing", thing)
-
-    def adjust_widgets(x):
-        log("adjust", x)
-
-def rebuild(F, app):
-    F.editing = False
-    makeform(app)
-
-def test_func(k, ml):
-    #log("key test_func", args)
-    ml.value += " " + str(k)
-    ml.display()
-    return False
-
-def callback(*args):
-    print("callback", args)
-
-def send(msg):
-    msg = msg + ";\n"
-    log(msg)
-    s.send(msg.encode("utf8"))
-
-def loop_selected(loops, values):
-    msg = "loop " + "loops/" + loops[values[0]]
-    send(msg)
-
-def get_info(mod):
-    info = run("xmp --load-only -C " + modspath + "/" + mod).decode("utf8")
-    channels = int(re.findall("Channels\ +: (\d+)", info)[0])
-    commentlines = re.findall("> (.*?)[\n$]", info)
-    log(commentlines)
-    comments = "\n".join(commentlines)
-    return [channels, comments]
-
-def make_mod_files(mod, info):
-    for i in range(info[0]):
-        log(run("xmp -S " + str(i) + " " + modspath + "/" + mod + " --nocmd -m -a 1 -o /tmp/fakeboy/" + str(i) + ".wav").decode("utf8"))
-
-def exitform(F):
+def exit_form(F):
     F.editing = False
 
-def makesender(el, c, key, conv):
+def make_sender(el, c, key, conv):
     def x():
         send("channel " + str(c) + " " + key + " " + conv(el.value))
     return x
 
-def makemodform(info, mod):
+def make_mod_form(info, mod):
     F = MyForm(name=mod, minimum_columns=20, minimum_lines=20)
     play = F.add(npyscreen.Checkbox, value=False, name="play")
     play.whenToggled = lambda: send("play " + str(play.value and 1 or 0))
@@ -90,17 +29,34 @@ def makemodform(info, mod):
 
     for c in range(info[0]):
         on = F.add(npyscreen.Checkbox, value=True, name="ch " + str(c), max_width=15)
-        on.whenToggled = makesender(on, c, "volume", lambda v: str(v and 4 or 0))
+        on.whenToggled = make_sender(on, c, "volume", lambda v: str(v and 4 or 0))
         F.nextrely += -1
         pan = F.add(npyscreen.Checkbox, value=True, name="left " + str(c), relx=20, max_width=20)
-        pan.whenToggled = makesender(pan, c, "pan", lambda v: str(v and 1 or 0))
+        pan.whenToggled = make_sender(pan, c, "pan", lambda v: str(v and 1 or 0))
     F.nextrely += 1
 
     ml = F.add(npyscreen.MultiLineEdit, value=info[1], max_height=10, editable=False)
 
-    quit = F.add(npyscreen.ButtonPress, name = "back", when_pressed_function = lambda: exitform(F), rely=-3, relx=-12)
+    quit = F.add(npyscreen.ButtonPress, name = "back", when_pressed_function = lambda: exit_form(F), rely=-3, relx=-12)
 
     F.edit()
+
+### modlist
+
+def run(cmd):
+    return check_output(cmd, stderr=STDOUT, shell=True)
+
+def make_mod_files(mod, info):
+    for i in range(info[0]):
+        log(run("xmp -S " + str(i) + " " + modspath + "/" + mod + " --nocmd -m -a 1 -o " + wavtmp + "/" + str(i) + ".wav").decode("utf8"))
+
+def get_info(mod):
+    info = run("xmp --load-only -C " + modspath + "/" + mod).decode("utf8")
+    channels = int(re.findall("Channels\ +: (\d+)", info)[0])
+    commentlines = re.findall("> (.*?)[\n$]", info)
+    log(commentlines)
+    comments = "\n".join(commentlines)
+    return [channels, comments]
 
 def start_mod(mods, mod, F):
     # extract the notes
@@ -113,10 +69,10 @@ def start_mod(mods, mod, F):
     #F.DISPLAY()
     send("reset")
     for i in range(info[0]):
-        send("channel " + str(i) + " loop /tmp/fakeboy/" + str(i) + ".wav")
-    makemodform(info, mod)
+        send("channel " + str(i) + " loop " + wavtmp + "/" + str(i) + ".wav")
+    make_mod_form(info, mod)
 
-def makeform(app, selected=0):
+def make_modlist_form(app, selected=0):
         F = MyForm(name = "fakeboy", minimum_columns=20, minimum_lines=20)
         app.F = F
 
@@ -134,7 +90,7 @@ def makeform(app, selected=0):
 
 class TestApp(npyscreen.NPSApp):
     def main(self):
-        makeform(self)
+        make_modlist_form(self)
         log("after make form")
         #print(ms.get_selected_objects())
 
