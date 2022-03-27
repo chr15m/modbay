@@ -1,7 +1,7 @@
-#N canvas 625 1159 667 960 12;
+#N canvas 605 78 667 960 12;
 #X obj 17 19 netreceive -u 1232;
 #X obj 430 41 loadbang;
-#X obj 430 65 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 0
+#X obj 430 65 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 1
 1;
 #X obj 430 133 metro 166;
 #X obj 464 157 + 1;
@@ -57,6 +57,40 @@
 #X obj 515 410 change;
 #X obj 533 330 r sync-div;
 #X msg 198 321 \; play 0 \; sync-div 1 \;;
+#N canvas 1 53 543 755 in-band-sync 0;
+#X obj 76 241 +~;
+#X obj 26 60 *~ 0.1;
+#X obj 27 116 *~ 0;
+#X obj 26 36 osc~ 18000;
+#X obj 94 208 *~ 0.1;
+#X obj 94 184 osc~ 18500;
+#X obj 396 73 int;
+#X obj 396 25 inlet;
+#X obj 396 97 change;
+#X obj 76 285 dac~;
+#X text 97 158 volume reference oscillator;
+#X obj 396 121 mod 2;
+#X floatatom 396 145 5 0 0 0 - - -;
+#X obj 396 49 / 8;
+#X obj 396 168 s \$0/in-band-sync;
+#X obj 52 90 r \$0/in-band-sync;
+#X connect 0 0 9 0;
+#X connect 0 0 9 1;
+#X connect 1 0 2 0;
+#X connect 2 0 0 0;
+#X connect 3 0 1 0;
+#X connect 4 0 0 1;
+#X connect 5 0 4 0;
+#X connect 6 0 8 0;
+#X connect 7 0 13 0;
+#X connect 8 0 11 0;
+#X connect 11 0 12 0;
+#X connect 12 0 14 0;
+#X connect 13 0 6 0;
+#X connect 15 0 2 1;
+#X restore 494 606 pd in-band-sync;
+#X text 491 549 in-band sync;
+#X obj 494 580 r global/tick;
 #X connect 0 0 7 0;
 #X connect 0 0 48 0;
 #X connect 1 0 2 0;
@@ -101,3 +135,4 @@
 #X connect 53 0 54 0;
 #X connect 54 0 20 0;
 #X connect 55 0 52 1;
+#X connect 59 0 57 0;

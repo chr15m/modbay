@@ -1,4 +1,4 @@
-#N canvas 1302 1159 597 960 12;
+#N canvas 1302 119 597 960 12;
 #X obj 15 64 route loop;
 #X obj 258 110 list split 1;
 #X obj 258 243 s;
@@ -11,9 +11,9 @@
 #X obj 43 525 mod 16;
 #X obj 111 610 / 16;
 #X obj 111 634 t f f;
-#X obj 197 671 / 44100;
-#X floatatom 197 695 5 0 0 0 - - -;
-#X obj 197 718 * 1000;
+#X obj 317 671 / 44100;
+#X floatatom 317 695 5 0 0 0 - - -;
+#X obj 317 718 * 1000;
 #X obj 43 489 f;
 #X obj 43 725 list append;
 #X obj 43 405 list prepend;
@@ -62,8 +62,8 @@
 #X obj 15 198 table \$0/storage;
 #X obj 43 768 tabplay~ \$0/storage;
 #X obj 43 261 r global/tick;
-#X obj 197 768 s global/ticklength;
-#X text 211 742 TODO: every loop resets the BPM atm;
+#X obj 317 768 s global/ticklength;
+#X text 331 742 TODO: every loop resets the BPM atm;
 #X obj 125 556 r \$0/divisions;
 #X obj 100 501 r \$0/divisions;
 #X obj 253 340 s \$0/divisions;
