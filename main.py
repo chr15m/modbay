@@ -7,47 +7,16 @@ from os import listdir
 from os.path import splitext
 from time import sleep
 from subprocess import check_output, STDOUT
+import struct
 import npyscreen
 from common import MyForm, send, log, s, wavtmp, modspath
-
-def exit_form(F):
-    F.editing = False
-
-def make_sender(el, c, key, conv):
-    def x():
-        send("channel " + str(c) + " " + key + " " + conv(el.value))
-    return x
-
-def make_mod_form(info, mod):
-    F = MyForm(name=mod, minimum_columns=20, minimum_lines=20)
-    play = F.add(npyscreen.Checkbox, value=False, name="play")
-    play.whenToggled = lambda: send("play " + str(play.value and 1 or 0))
-
-    s2  = F.add(npyscreen.TitleSlider, out_of=1, name = "Sync rate", value=0)
-    s2.when_value_edited=lambda: send("sync-div " + str(pow(2, s2.value)))
-    F.nextrely += 1
-
-    for c in range(info[0]):
-        on = F.add(npyscreen.Checkbox, value=True, name="ch " + str(c), max_width=15)
-        on.whenToggled = make_sender(on, c, "volume", lambda v: str(v and 4 or 0))
-        F.nextrely += -1
-        pan = F.add(npyscreen.Checkbox, value=True, name="left " + str(c), relx=20, max_width=20)
-        pan.whenToggled = make_sender(pan, c, "pan", lambda v: str(v and 1 or 0))
-    F.nextrely += 1
-
-    ml = F.add(npyscreen.MultiLineEdit, value=info[1], max_height=10, editable=False)
-
-    quit = F.add(npyscreen.ButtonPress, name = "back", when_pressed_function = lambda: exit_form(F), rely=-3, relx=-12)
-
-    F.edit()
-
-### modlist
+from player import make_mod_form
 
 def run(cmd):
     return check_output(cmd, stderr=STDOUT, shell=True)
 
-def make_mod_files(mod, info):
-    for i in range(info[0]):
+def make_mod_files(mod, channels):
+    for i in range(channels):
         log(run("xmp -S " + str(i) + " " + modspath + "/" + mod + " --nocmd -m -a 1 -o " + wavtmp + "/" + str(i) + ".wav").decode("utf8"))
 
 def get_info(mod):
@@ -58,17 +27,32 @@ def get_info(mod):
     comments = "\n".join(commentlines)
     return [channels, comments]
 
+def get_channel_names(mod, channels):
+    data = open(modspath + "/" + mod, "rb").read()
+    try:
+        i = data.index(bytearray("CNAM", "utf8"))
+    except:
+        i = None
+    if i:
+        chancount = int(struct.unpack('<I',data[i+4:i+8])[0] / 20)
+    else:
+        chancount = channels
+    return [data[i+n*20+8:i+n*20+28].decode("utf8").rstrip('\0') if i else "ch " + str(n)
+            for n in range(chancount)]
+
 def start_mod(mods, mod, F):
     # extract the notes
     info = get_info(mod)
+    info.append(get_channel_names(mod, info[0]))
+    chan_count = len(info[2])
     log("Loading mod:", info)
     npyscreen.blank_terminal()
-    npyscreen.notify("rendering " + str(info[0]) + " channels", title='Rendering')
-    make_mod_files(mod, info)
+    npyscreen.notify("rendering " + str(chan_count) + " channels", title='Rendering')
+    make_mod_files(mod, chan_count)
     #F.editing = False
     #F.DISPLAY()
     send("reset")
-    for i in range(info[0]):
+    for i in range(chan_count):
         send("channel " + str(i) + " loop " + wavtmp + "/" + str(i) + ".wav")
     make_mod_form(info, mod)
 
