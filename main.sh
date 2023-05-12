@@ -7,7 +7,7 @@ else
   py=python3
 fi
 
-./watch-spaceghost.sh &
+./watch-spaceghost.sh > watch.log &
 sgpid=$!
 
 pd -nogui -noadc -audiobuf 150 _main.pd > pd.log 2>&1 &
