@@ -42,7 +42,7 @@ def grid_interact(k, edit_cell, values):
     if edit_cell[1] == 1:
         new_value = "off" if value == "on" else "on"
         update_value(values, edit_cell, new_value)
-        send("channel " + str(channel) + " volume " + str(1 if new_value == "on" else 0))
+        send("channel " + str(channel) + " volume " + str(4 if new_value == "on" else 0))
     # handle pan
     if edit_cell[1] == 2:
         new_value = "left" if value == "right" else "right"
