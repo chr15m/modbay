@@ -1,1 +1,9 @@
 .*.swp
+__pycache__
+log
+mods
+*.log
+workspace
+.direnv
+.envrc
+.python-version
