@@ -98,9 +98,12 @@
 #X obj 217 791 spigot 0;
 #X obj 346 771 sel 1;
 #X obj 217 767 metro 10000;
-#X floatatom 391 771 5 0 0 0 - - -;
 #X text 91 697 try to send sync signal to spaceghost (raspberry pi
 mixer);
+#X obj 457 773 print spaceghost;
+#X floatatom 397 771 5 0 0 0 - - -;
+#X obj 537 694 loadbang;
+#X msg 537 718 fake;
 #X connect 0 0 7 0;
 #X connect 0 0 48 0;
 #X connect 1 0 2 0;
@@ -151,7 +154,10 @@ mixer);
 #X connect 64 0 63 0;
 #X connect 65 0 66 1;
 #X connect 65 0 67 0;
-#X connect 65 0 69 0;
+#X connect 65 0 70 0;
+#X connect 65 0 71 0;
 #X connect 66 0 60 0;
 #X connect 67 0 68 0;
 #X connect 68 0 66 0;
+#X connect 72 0 73 0;
+#X connect 73 0 70 0;
