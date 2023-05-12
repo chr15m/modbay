@@ -1,4 +1,4 @@
-#N canvas 547 77 667 960 12;
+#N canvas 550 1174 667 960 12;
 #X obj 17 19 netreceive -u 1232;
 #X obj 430 41 loadbang;
 #X obj 430 65 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 1
@@ -89,12 +89,18 @@
 #X restore 478 606 pd in-band-sync;
 #X obj 478 580 r global/tick;
 #X text 475 549 in-band sync (makes a horrible noise);
-#X msg 216 710 connect spaceghost.local 31425;
-#X obj 217 647 metro 2000;
-#X obj 221 612 loadbang;
-#X obj 216 735 netsend -u;
-#X msg 321 667 send \$1;
-#X obj 320 630 r global/tick;
+#X msg 217 824 connect spaceghost.local 31425;
+#X obj 217 742 loadbang;
+#X obj 217 849 netsend -u;
+#X msg 118 767 send \$1;
+#X obj 118 742 r global/tick;
+#X obj 346 737 netreceive -u 33333;
+#X obj 217 791 spigot 0;
+#X obj 346 771 sel 1;
+#X obj 217 767 metro 10000;
+#X floatatom 391 771 5 0 0 0 - - -;
+#X text 91 697 try to send sync signal to spaceghost (raspberry pi
+mixer);
 #X connect 0 0 7 0;
 #X connect 0 0 48 0;
 #X connect 1 0 2 0;
@@ -139,8 +145,13 @@
 #X connect 53 0 54 0;
 #X connect 54 0 20 0;
 #X connect 55 0 52 1;
-#X connect 60 0 63 0;
-#X connect 61 0 60 0;
-#X connect 62 0 61 0;
+#X connect 60 0 62 0;
+#X connect 61 0 68 0;
+#X connect 63 0 62 0;
 #X connect 64 0 63 0;
-#X connect 65 0 64 0;
+#X connect 65 0 66 1;
+#X connect 65 0 67 0;
+#X connect 65 0 69 0;
+#X connect 66 0 60 0;
+#X connect 67 0 68 0;
+#X connect 68 0 66 0;
