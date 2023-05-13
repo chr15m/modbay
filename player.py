@@ -79,7 +79,7 @@ def make_mod_form(info, mod):
     for y in range(len(channel_names)):
         row = []
         row.append(channel_names[y])
-        row.append("on")
+        row.append("off")
         row.append("right")
         gd.values.append(row)
 
