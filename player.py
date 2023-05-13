@@ -53,6 +53,8 @@ def make_mod_form(info, mod):
     channel_names = info[2]
     F = MyForm(name=mod, minimum_columns=20, minimum_lines=20)
 
+    quit = F.add(npyscreen.ButtonPress, name = "back", when_pressed_function = lambda: exit_form(F), relx=-12)
+
     play = F.add(npyscreen.Checkbox, value=False, name="play")
     play.whenToggled = lambda: send("play " + str(play.value and 1 or 0))
 
@@ -90,7 +92,5 @@ def make_mod_form(info, mod):
     #F.nextrely += 1
 
     #ml = F.add(npyscreen.MultiLineEdit, value=info[1], max_height=10, editable=False)
-
-    quit = F.add(npyscreen.ButtonPress, name = "back", when_pressed_function = lambda: exit_form(F), rely=-3, relx=-12)
 
     F.edit()
