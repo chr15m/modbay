@@ -44,7 +44,7 @@ def start_mod(mods, mod, F):
     # extract the notes
     info = get_mod_info(mod)
     info.append(get_mod_channel_names(mod, info[0]))
-    chan_count = len(info[2])
+    chan_count = min(len(info[2]), 8)
     log("Loading mod:", info)
     npyscreen.blank_terminal()
     npyscreen.notify("rendering " + str(chan_count) + " channels", title='Rendering')
@@ -57,18 +57,18 @@ def start_mod(mods, mod, F):
     make_mod_form(info, mod)
 
 def make_mod_list_form(app, selected=0):
-    F = MyForm(name = "fakeboy", minimum_columns=20, minimum_lines=20)
+    F = MyForm(name = "fakeboy", columns=52, lines=20)
     app.F = F
+
+    quit = F.add(npyscreen.ButtonPress, name = "quit", when_pressed_function = lambda: app.exit_application(), relx=-12)
 
     F.add(npyscreen.FixedText, value="Mods:", editable=False)
 
     mods = []
     mods = [m for m in listdir("mods") if splitext(m)[1] in [".it", ".xm", ".mod", ".mptm"]]
 
-    ms = F.add(npyscreen.MultiLineAction, max_height=8, value = [], name="Mod", values = mods, scroll_exit=True)
+    ms = F.add(npyscreen.MultiLineAction, max_height=14, value = [], name="Mod", values = mods, scroll_exit=True)
     ms.actionHighlighted=lambda item,key: start_mod(mods, item, F)
-
-    quit = F.add(npyscreen.ButtonPress, name = "quit", when_pressed_function = lambda: app.exit_application(), rely=-3, relx=-12)
 
     F.edit()
 
