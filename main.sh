@@ -10,7 +10,15 @@ fi
 ./watch-spaceghost.sh > watch.log &
 sgpid=$!
 
-pd -nogui -noadc -audiobuf 150 _main.pd > pd.log 2>&1 &
+if [ "$1" != "--gui" ]
+then
+  guiflag="-nogui"
+else
+  guiflag=""
+  shift
+fi
+
+pd $guiflag -noadc -audiobuf 150 _main.pd > pd.log 2>&1 &
 pdpid=$!
 
 $py main.py ./mods
