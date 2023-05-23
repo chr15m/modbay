@@ -73,7 +73,7 @@ mixer);
 #X obj 537 694 loadbang;
 #X msg 537 718 fake;
 #N canvas 1 53 450 300 in-band-sync-test 0;
-#N canvas 1 53 543 755 in-band-sync 1;
+#N canvas 1 53 543 755 in-band-sync 0;
 #X obj 76 241 +~;
 #X obj 26 60 *~ 0.1;
 #X obj 27 116 *~ 0;
