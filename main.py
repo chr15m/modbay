@@ -63,7 +63,7 @@ def make_mod_list_form(app, selected=0):
     F.add(npyscreen.FixedText, value="Mods:", editable=False)
 
     mods = []
-    mods = [m for m in listdir("mods") if splitext(m)[1] in [".it", ".xm", ".mod"]]
+    mods = [m for m in listdir("mods") if splitext(m)[1] in [".it", ".xm", ".mod", ".mptm"]]
 
     ms = F.add(npyscreen.MultiLineAction, max_height=8, value = [], name="Mod", values = mods, scroll_exit=True)
     ms.actionHighlighted=lambda item,key: start_mod(mods, item, F)
