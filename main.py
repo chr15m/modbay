@@ -19,7 +19,7 @@ def make_mod_files(mod, channels):
     for i in range(channels):
         log(run("xmp -S " + str(i) + " " + modspath + "/" + mod + " --nocmd -m -a 1 -o " + wavtmp + "/" + str(i) + ".wav").decode("utf8"))
 
-def get_info(mod):
+def get_mod_info(mod):
     info = run("xmp --load-only -C " + modspath + "/" + mod).decode("utf8")
     channels = int(re.findall("Channels\ +: (\d+)", info)[0])
     commentlines = re.findall("> (.*?)[\n$]", info)
@@ -27,7 +27,7 @@ def get_info(mod):
     comments = "\n".join(commentlines)
     return [channels, comments]
 
-def get_channel_names(mod, channels):
+def get_mod_channel_names(mod, channels):
     data = open(modspath + "/" + mod, "rb").read()
     try:
         i = data.index(bytearray("CNAM", "utf8"))
@@ -42,8 +42,8 @@ def get_channel_names(mod, channels):
 
 def start_mod(mods, mod, F):
     # extract the notes
-    info = get_info(mod)
-    info.append(get_channel_names(mod, info[0]))
+    info = get_mod_info(mod)
+    info.append(get_mod_channel_names(mod, info[0]))
     chan_count = len(info[2])
     log("Loading mod:", info)
     npyscreen.blank_terminal()
@@ -56,25 +56,25 @@ def start_mod(mods, mod, F):
         send("channel " + str(i) + " loop " + wavtmp + "/" + str(i) + ".wav")
     make_mod_form(info, mod)
 
-def make_modlist_form(app, selected=0):
-        F = MyForm(name = "fakeboy", minimum_columns=20, minimum_lines=20)
-        app.F = F
+def make_mod_list_form(app, selected=0):
+    F = MyForm(name = "fakeboy", minimum_columns=20, minimum_lines=20)
+    app.F = F
 
-        F.add(npyscreen.FixedText, value="Mods:", editable=False)
+    F.add(npyscreen.FixedText, value="Mods:", editable=False)
 
-        mods = []
-        mods = [m for m in listdir("mods") if splitext(m)[1] in [".it", ".xm", ".mod"]]
+    mods = []
+    mods = [m for m in listdir("mods") if splitext(m)[1] in [".it", ".xm", ".mod"]]
 
-        ms = F.add(npyscreen.MultiLineAction, max_height=8, value = [], name="Mod", values = mods, scroll_exit=True)
-        ms.actionHighlighted=lambda item,key: start_mod(mods, item, F)
+    ms = F.add(npyscreen.MultiLineAction, max_height=8, value = [], name="Mod", values = mods, scroll_exit=True)
+    ms.actionHighlighted=lambda item,key: start_mod(mods, item, F)
 
-        quit = F.add(npyscreen.ButtonPress, name = "quit", when_pressed_function = lambda: app.exit_application(), rely=-3, relx=-12)
+    quit = F.add(npyscreen.ButtonPress, name = "quit", when_pressed_function = lambda: app.exit_application(), rely=-3, relx=-12)
 
-        F.edit()
+    F.edit()
 
 class TestApp(npyscreen.NPSApp):
     def main(self):
-        make_modlist_form(self)
+        make_mod_list_form(self)
         log("after make form")
         #print(ms.get_selected_objects())
 
