@@ -50,7 +50,8 @@ def grid_interact(k, edit_cell, values):
         send("channel " + str(channel) + " pan " + str(1 if new_value == "right" else 0))
 
 def make_mod_form(info, mod):
-    channel_names = info[2]
+    channel_names = info["channelnames"]
+    channel_count = info["channelcount"]
     F = MyForm(name=mod, minimum_columns=20, minimum_lines=20)
 
     quit = F.add(npyscreen.ButtonPress, name = "back", when_pressed_function = lambda: exit_form(F), relx=-12)
@@ -72,13 +73,13 @@ def make_mod_form(info, mod):
     handler_259 = gd.handlers[259]
     gd.handlers[259] = lambda k: handle_edges(handler_259, k, gd.edit_cell, 0, gd.handlers[353]) # up
     handler_258 = gd.handlers[258]
-    gd.handlers[258] = lambda k: handle_edges(handler_258, k, gd.edit_cell, len(channel_names) - 1, gd.handlers[9]) # down
+    gd.handlers[258] = lambda k: handle_edges(handler_258, k, gd.edit_cell, channel_count - 1, gd.handlers[9]) # down
     log(gd.handlers)
 
     gd.values = []
-    for y in range(len(channel_names)):
+    for y in range(channel_count):
         row = []
-        row.append(channel_names[y])
+        row.append(channel_names.get(y, "ch " + str(y)))
         row.append("off")
         row.append("right")
         gd.values.append(row)

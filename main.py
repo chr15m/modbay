@@ -11,6 +11,7 @@ import struct
 import npyscreen
 from common import MyForm, send, log, s, wavtmp, modspath
 from player import make_mod_form
+from modrender import mod_get_info
 
 def run(cmd):
     return check_output(cmd, stderr=STDOUT, shell=True)
@@ -19,36 +20,15 @@ def make_mod_files(mod, channels):
     for i in range(channels):
         log(run("xmp -S " + str(i) + " " + modspath + "/" + mod + " --nocmd -m -a 1 -o " + wavtmp + "/" + str(i) + ".wav").decode("utf8"))
 
-def get_mod_info(mod):
-    info = run("xmp --load-only -C " + modspath + "/" + mod).decode("utf8")
-    channels = int(re.findall("Channels\ +: (\d+)", info)[0])
-    commentlines = re.findall("> (.*?)[\n$]", info)
-    log(commentlines)
-    comments = "\n".join(commentlines)
-    return [channels, comments]
-
-def get_mod_channel_names(mod, channels):
-    data = open(modspath + "/" + mod, "rb").read()
-    try:
-        i = data.index(bytearray("CNAM", "utf8"))
-    except:
-        i = None
-    if i:
-        chancount = int(struct.unpack('<I',data[i+4:i+8])[0] / 20)
-    else:
-        chancount = channels
-    return [data[i+n*20+8:i+n*20+28].decode("utf8").rstrip('\0') if i else "ch " + str(n)
-            for n in range(chancount)]
-
 def start_mod(mods, mod, F):
     # extract the notes
-    info = get_mod_info(mod)
-    info.append(get_mod_channel_names(mod, info[0]))
-    chan_count = min(len(info[2]), 8)
+    info = mod_get_info(modspath + "/" + mod)
     log("Loading mod:", info)
+    chan_count = min(info["channelcount"], 8)
     npyscreen.blank_terminal()
     npyscreen.notify("rendering " + str(chan_count) + " channels", title='Rendering')
     make_mod_files(mod, chan_count)
+    sleep(3)
     #F.editing = False
     #F.DISPLAY()
     send("reset")
