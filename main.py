@@ -57,7 +57,7 @@ def start_mod(mods, mod, F):
     make_mod_form(info, mod)
 
 def make_mod_list_form(app, selected=0):
-    F = MyForm(name = "fakeboy", columns=52, lines=20)
+    F = MyForm(name = "modbay", columns=52, lines=20)
     app.F = F
 
     quit = F.add(npyscreen.ButtonPress, name = "quit", when_pressed_function = lambda: app.exit_application(), relx=-12)
