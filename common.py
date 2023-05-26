@@ -7,14 +7,6 @@ s.connect(("127.0.0.1", 1232))
 
 logfile = open("log", "a")
 
-wavtmp = "/tmp/fakeboy"
-try:
-    mkdir(wavtmp)
-except FileExistsError:
-    pass
-
-modspath = None
-
 def log(*msg):
     logfile.write(" ".join([str(i) for i in msg]) + "\n")
     logfile.flush()

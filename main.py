@@ -3,22 +3,24 @@
 import curses
 import re
 from sys import exit, argv
-from os import listdir
+from os import listdir, makedirs
 from os.path import splitext
 from time import sleep
 from subprocess import check_output, STDOUT
 import struct
 import npyscreen
-from common import MyForm, send, log, s, wavtmp, modspath
+from common import MyForm, send, log, s
 from player import make_mod_form
 from modrender import mod_get_info
+
+modspath = None
 
 def run(cmd):
     return check_output(cmd, stderr=STDOUT, shell=True)
 
-def make_mod_files(mod, channels):
+def make_mod_files(modfile, destdir, channels):
     for i in range(channels):
-        log(run("xmp -S " + str(i) + " " + modspath + "/" + mod + " --nocmd -m -a 1 -o " + wavtmp + "/" + str(i) + ".wav").decode("utf8"))
+        log(run("xmp -S " + str(i) + " " + modfile + " --nocmd -m -a 1 -o " + destdir + "/" + str(i) + ".wav").decode("utf8"))
 
 def start_mod(mods, mod, F):
     # extract the notes
@@ -27,13 +29,15 @@ def start_mod(mods, mod, F):
     chan_count = min(info["channelcount"], 8)
     npyscreen.blank_terminal()
     npyscreen.notify("rendering " + str(chan_count) + " channels", title='Rendering')
-    make_mod_files(mod, chan_count)
+    wavtmpdir = "/tmp/fakeboy/" + mod
+    makedirs(wavtmpdir, exist_ok=True)
+    make_mod_files(modspath + "/" + mod, wavtmpdir, chan_count)
     sleep(3)
     #F.editing = False
     #F.DISPLAY()
     send("reset")
     for i in range(chan_count):
-        send("channel " + str(i) + " loop " + wavtmp + "/" + str(i) + ".wav")
+        send("channel " + str(i) + " loop " + wavtmpdir + "/" + str(i) + ".wav")
     make_mod_form(info, mod)
 
 def make_mod_list_form(app, selected=0):
