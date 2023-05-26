@@ -11,16 +11,9 @@ import struct
 import npyscreen
 from common import MyForm, send, log, s
 from player import make_mod_form
-from modrender import mod_get_info
+from modrender import mod_get_info, mod_make_stems
 
 modspath = None
-
-def run(cmd):
-    return check_output(cmd, stderr=STDOUT, shell=True)
-
-def make_mod_files(modfile, destdir, channels):
-    for i in range(channels):
-        log(run("xmp -S " + str(i) + " " + modfile + " --nocmd -m -a 1 -o " + destdir + "/" + str(i) + ".wav").decode("utf8"))
 
 def start_mod(mods, mod, F):
     # extract the notes
@@ -31,7 +24,7 @@ def start_mod(mods, mod, F):
     npyscreen.notify("rendering " + str(chan_count) + " channels", title='Rendering')
     wavtmpdir = "/tmp/fakeboy/" + mod
     makedirs(wavtmpdir, exist_ok=True)
-    make_mod_files(modspath + "/" + mod, wavtmpdir, chan_count)
+    mod_make_stems(modspath + "/" + mod, wavtmpdir, chan_count)
     sleep(3)
     #F.editing = False
     #F.DISPLAY()
