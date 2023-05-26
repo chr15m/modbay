@@ -23,7 +23,6 @@ def start_mod(modspath, mods, mod, F):
     wavtmpdir = "/tmp/fakeboy/" + mod
     makedirs(wavtmpdir, exist_ok=True)
     mod_make_stems(modspath + "/" + mod, wavtmpdir, chan_count)
-    sleep(3)
     #F.editing = False
     #F.DISPLAY()
     send("reset")
