@@ -13,9 +13,7 @@ from common import MyForm, send, log, s
 from player import make_mod_form
 from modrender import mod_get_info, mod_make_stems
 
-modspath = None
-
-def start_mod(mods, mod, F):
+def start_mod(modspath, mods, mod, F):
     # extract the notes
     info = mod_get_info(modspath + "/" + mod)
     log("Loading mod:", info)
@@ -33,7 +31,7 @@ def start_mod(mods, mod, F):
         send("channel " + str(i) + " loop " + wavtmpdir + "/" + str(i) + ".wav")
     make_mod_form(info, mod)
 
-def make_mod_list_form(app, selected=0):
+def make_mod_list_form(app, modspath):
     F = MyForm(name = "modbay", columns=52, lines=20)
     app.F = F
 
@@ -45,13 +43,19 @@ def make_mod_list_form(app, selected=0):
     mods = [m for m in listdir("mods") if splitext(m)[1] in [".it", ".xm", ".mod", ".mptm"]]
 
     ms = F.add(npyscreen.MultiLineAction, max_height=14, value = [], name="Mod", values = mods, scroll_exit=True)
-    ms.actionHighlighted=lambda item,key: start_mod(mods, item, F)
+    ms.actionHighlighted=lambda item,key: start_mod(modspath, mods, item, F)
 
     F.edit()
 
 class TestApp(npyscreen.NPSApp):
+    modspath = None
+
+    def __init__(self, modspath, *args, **kwargs):
+        self.modspath = modspath
+        npyscreen.NPSApp.__init__(self, *args, **kwargs)
+
     def main(self):
-        make_mod_list_form(self)
+        make_mod_list_form(self, self.modspath)
         log("after make form")
         #print(ms.get_selected_objects())
 
@@ -70,7 +74,6 @@ if __name__ == "__main__":
     if len(argv) != 2:
         print("Usage: main.py " + "path-to-mods")
     else:
-        modspath = argv[1]
-        App = TestApp()
+        App = TestApp(argv[1])
         App.run()
 
