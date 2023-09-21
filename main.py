@@ -28,7 +28,7 @@ def start_mod(modspath, mods, mod, F):
     send("reset")
     for i in range(chan_count):
         send("channel " + str(i) + " loop " + wavtmpdir + "/" + str(i) + ".wav")
-    make_mod_form(info, mod)
+    make_mod_form(info, mod, modspath + "/" + mod + "-modbay-state.json")
 
 def make_mod_list_form(app, modspath):
     F = MyForm(name = "modbay", columns=52, lines=20)

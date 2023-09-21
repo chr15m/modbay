@@ -21,7 +21,7 @@ fi
 pd $guiflag -noadc -audiobuf 150 _main.pd > pd.log 2>&1 &
 pdpid=$!
 
-$py main.py ./mods
+$py ${MAINFILE:-main.py} ./mods
 
 kill $pdpid
 kill $sgpid
