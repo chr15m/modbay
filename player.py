@@ -87,7 +87,7 @@ def make_mod_form(info, mod, statefilepath):
         row = []
         row.append(channel_names.get(y, "ch " + str(y)))
         row.append("off")
-        row.append("right")
+        row.append("left")
         gd.values.append(row)
 
     #for c in range(info[0]):

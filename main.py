@@ -6,28 +6,39 @@ from sys import exit, argv
 from os import listdir, makedirs
 from os.path import splitext
 from time import sleep
+from datetime import datetime
 from subprocess import check_output, STDOUT
 import struct
 import npyscreen
 from common import MyForm, send, log, s
 from player import make_mod_form
 from modrender import mod_get_info, mod_make_stems
+from fruity import flp_extract, flp_get_info, flp_extract_stems
 
 def start_mod(modspath, mods, mod, F):
-    # extract the notes
-    info = mod_get_info(modspath + "/" + mod)
-    log("Loading mod:", info)
-    chan_count = min(info["channelcount"], 8)
-    npyscreen.blank_terminal()
-    npyscreen.notify("rendering " + str(chan_count) + " channels", title='Rendering')
-    wavtmpdir = "/tmp/fakeboy/" + mod
-    makedirs(wavtmpdir, exist_ok=True)
-    mod_make_stems(modspath + "/" + mod, wavtmpdir, chan_count)
-    #F.editing = False
-    #F.DISPLAY()
+    tmpdir = "/tmp/fakeboy/" + mod
+    makedirs(tmpdir, exist_ok=True)
+    if mod.endswith(".zip"):
+        fruityzip = modspath + "/" + mod
+        flpfile = flp_extract(fruityzip, tmpdir)
+        log("Loading flp:", flpfile)
+        info = flp_get_info(flpfile)
+        log("Flp info:", info)
+        chan_count = min(info["channelcount"], 8)
+        flp_extract_stems(fruityzip, tmpdir, chan_count)
+    else:
+        # extract the notes
+        info = mod_get_info(modspath + "/" + mod)
+        log("Loading mod:", info)
+        chan_count = min(info["channelcount"], 8)
+        npyscreen.blank_terminal()
+        npyscreen.notify("rendering " + str(chan_count) + " channels", title='Rendering')
+        mod_make_stems(modspath + "/" + mod, tmpdir, chan_count)
+        #F.editing = False
+        #F.DISPLAY()
     send("reset")
     for i in range(chan_count):
-        send("channel " + str(i) + " loop " + wavtmpdir + "/" + str(i) + ".wav")
+        send("channel " + str(i) + " loop " + tmpdir + "/" + str(i) + ".wav")
     make_mod_form(info, mod, modspath + "/" + mod + "-modbay-state.json")
 
 def make_mod_list_form(app, modspath):
@@ -39,14 +50,14 @@ def make_mod_list_form(app, modspath):
     F.add(npyscreen.FixedText, value="Mods:", editable=False)
 
     mods = []
-    mods = [m for m in listdir("mods") if splitext(m)[1] in [".it", ".xm", ".mod", ".mptm"]]
+    mods = [m for m in listdir("mods") if splitext(m)[1] in [".it", ".xm", ".mod", ".mptm", ".zip"]]
 
     ms = F.add(npyscreen.MultiLineAction, max_height=14, value = [], name="Mod", values = mods, scroll_exit=True)
     ms.actionHighlighted=lambda item,key: start_mod(modspath, mods, item, F)
 
     F.edit()
 
-class TestApp(npyscreen.NPSApp):
+class ModbayApp(npyscreen.NPSApp):
     modspath = None
 
     def __init__(self, modspath, *args, **kwargs):
@@ -73,6 +84,8 @@ if __name__ == "__main__":
     if len(argv) != 2:
         print("Usage: main.py " + "path-to-mods")
     else:
-        App = TestApp(argv[1])
+        log("Starting modbay.")
+        log(str(datetime.now()))
+        App = ModbayApp(argv[1])
         App.run()
 
