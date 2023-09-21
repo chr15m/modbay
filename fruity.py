@@ -11,8 +11,12 @@ def flp_get_info(flpfile):
     except ValueError:
         flp_monkeypatch_pyflp()
         project = pyflp.parse(flpfile)
-    channelnames = [c.name for c in project.channels]
-    info = {"channelnames": {i: channelnames[i] for i in range(len(channelnames))}}
+    channelnames = {}
+    for c in project.channels:
+        i = c.insert - 1
+        if i >= 0 and not channelnames.get(i):
+            channelnames[i] = project.mixer[c.insert].name or c.name
+    info = {"channelnames": channelnames}
     info["channelcount"] = len(info["channelnames"])
     return info
 
@@ -83,3 +87,60 @@ def flp_monkeypatch_pyflp():
         "fx.fix_trim" / c.Optional(c.Flag),  # 158 (FL 20.8.4 max)
         "_extra" / c.GreedyBytes,  # * 168 as of 20.9.1
     )
+
+if __name__ == "__main__":
+    from sys import argv
+    from pprint import pprint
+    if not argv[-1].endswith(".flp"):
+        print("Usage: fruity.py FILENAME.flp")
+    else:
+        flpfile = argv[-1]
+        print("Opening", flpfile)
+        try:
+            project = pyflp.parse(flpfile)
+        except ValueError:
+            flp_monkeypatch_pyflp()
+            project = pyflp.parse(flpfile)
+        #for c in project.channels:
+        #    print(c)
+        #    print(c.automations)
+        print("Fruity loops version:", project.version)
+        inserts = {}
+
+        for c in project.channels:
+            print(type(c), c.iid, c.name, c.insert)
+
+        insertmap = {}
+        channelnames = {}
+        for c in project.channels:
+            if not insertmap.get(c.insert):
+                insertmap[c.insert] = []
+            insertmap[c.insert].append(c.name)
+            i = c.insert - 1
+            if i >= 0 and not channelnames.get(i):
+                channelnames[i] = project.mixer[c.insert].name or c.name
+
+        #insertmap = [(c.insert, c.name) for c in project.channels]
+        #insertnames = [i.name for i in project.mixer]
+        #channelnames = [c.name for c in project.channels]
+        #pprint(channelnames)
+
+        #for c in sorted(insertmap.keys()):
+        #    print(c, insertmap[c])
+
+        for c in range(len(channelnames)):
+            print(c, channelnames[c])
+
+        #pprint([c.name for c in project.channels])
+#         for m in project.mixer:
+            # print(m)
+            # for s in m:
+                # try:
+                    # print("\t", s)
+                # except:
+                    # pass
+        #for c in project.channels:
+        #    print(c)
+        #    print(c.insert)
+        #pprint([c for c in project.channels])
+        #pprint([c.name for c in project.channels])
