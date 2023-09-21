@@ -15,6 +15,8 @@ from player import make_mod_form
 from modrender import mod_get_info, mod_make_stems
 from fruity import flp_extract, flp_get_info, flp_extract_stems
 
+MAX_CHANNELS = 16
+
 def start_mod(modspath, mods, mod, F):
     tmpdir = "/tmp/fakeboy/" + mod
     makedirs(tmpdir, exist_ok=True)
@@ -24,13 +26,13 @@ def start_mod(modspath, mods, mod, F):
         log("Loading flp:", flpfile)
         info = flp_get_info(flpfile)
         log("Flp info:", info)
-        chan_count = min(info["channelcount"], 8)
+        chan_count = min(info["channelcount"], MAX_CHANNELS)
         flp_extract_stems(fruityzip, tmpdir, chan_count)
     else:
         # extract the notes
         info = mod_get_info(modspath + "/" + mod)
         log("Loading mod:", info)
-        chan_count = min(info["channelcount"], 8)
+        chan_count = min(info["channelcount"], MAX_CHANNELS)
         npyscreen.blank_terminal()
         npyscreen.notify("rendering " + str(chan_count) + " channels", title='Rendering')
         mod_make_stems(modspath + "/" + mod, tmpdir, chan_count)
