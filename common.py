@@ -27,5 +27,7 @@ def test_func(k, ml):
 def send(msg):
     msg = msg + ";\n"
     log(msg)
-    s.send(msg.encode("utf8"))
-
+    try:
+        s.send(msg.encode("utf8"))
+    except ConnectionRefusedError:
+        log("Failed to send UDP packet.")
