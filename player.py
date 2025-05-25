@@ -1,7 +1,8 @@
 import random
 import curses
 import npyscreen
-from json import dump
+import json
+import os
 
 from common import MyForm, send, log
 
@@ -18,8 +19,7 @@ class MyGrid(npyscreen.GridColTitles):
         log("MyGrid.set_up_handlers")
         npyscreen.GridColTitles.set_up_handlers(self)
 
-def exit_form(F, statefile):
-    statefile.close()
+def exit_form(F, statefilepath):
     F.editing = False
 
 def make_sender(el, c, key, conv):
@@ -37,30 +37,52 @@ def handle_edges(original_handler, k, edit_cell, limit, alt_handler):
 def update_value(values, edit_cell, value):
     values[edit_cell[0]][edit_cell[1]] = value
 
-def grid_interact(k, edit_cell, values, statefile):
+def grid_interact(k, edit_cell, values, statefile, channel_names):
     value = values[edit_cell[0]][edit_cell[1]]
     channel = edit_cell[0]
+    channel_name = channel_names.get(channel, "ch " + str(channel))
+
     # handle on/off
     if edit_cell[1] == 1:
         new_value = "off" if value == "on" else "on"
         update_value(values, edit_cell, new_value)
+        # Update the state dictionary
+        grid_interact.state_dict[channel_name]["on"] = new_value
         send("channel " + str(channel) + " volume " + str(4 if new_value == "on" else 0))
     # handle pan
     if edit_cell[1] == 2:
         new_value = "left" if value == "right" else "right"
         update_value(values, edit_cell, new_value)
+        # Update the state dictionary
+        grid_interact.state_dict[channel_name]["pan"] = new_value
         send("channel " + str(channel) + " pan " + str(1 if new_value == "right" else 0))
-    # update the statefile
-    dump(values, statefile)
-    statefile.flush()
+
+    # update the statefile - rewrite the entire file
+    log("Writing statefile:", statefile, grid_interact.state_dict)
+    with open(statefile, 'w') as f:
+        json.dump(grid_interact.state_dict, f)
 
 def make_mod_form(info, mod, statefilepath):
     channel_names = info["channelnames"]
     channel_count = info["channelcount"]
     F = MyForm(name=mod, minimum_columns=20, minimum_lines=20)
-    statefile = open(statefilepath, "w")
 
-    quit = F.add(npyscreen.ButtonPress, name = "back", when_pressed_function = lambda: exit_form(F, statefile), relx=-12)
+    # Initialize the state dictionary
+    grid_interact.state_dict = {}
+
+    # Load existing state if available
+    saved_state = {}
+    if os.path.exists(statefilepath):
+        try:
+            with open(statefilepath, 'r') as f:
+                saved_state = json.load(f)
+            # Use the loaded state as our working state
+            grid_interact.state_dict = saved_state.copy()
+            log("Loaded saved state from " + statefilepath)
+        except Exception as e:
+            log("Error loading state: " + str(e))
+
+    quit = F.add(npyscreen.ButtonPress, name = "back", when_pressed_function = lambda: exit_form(F, statefilepath), relx=-12)
 
     play = F.add(npyscreen.Checkbox, value=False, name="play")
     play.whenToggled = lambda: send("play " + str(play.value and 1 or 0))
@@ -70,11 +92,10 @@ def make_mod_form(info, mod, statefilepath):
     F.nextrely += 1
 
     # channels grid
-
     gd = F.add(MyGrid, col_titles=["", "on", "pan"])
     #gd.when_value_edited = lambda: log("value edited", gd.edit_cell)
     #gd.when_cursor_moved = lambda: log("cursor moved", gd.edit_cell)
-    gd.handlers.update({curses.ascii.SP: lambda k: grid_interact(k, gd.edit_cell, gd.values, statefile)})
+    gd.handlers.update({curses.ascii.SP: lambda k: grid_interact(k, gd.edit_cell, gd.values, statefilepath, channel_names)})
     # rebind up down keys to check if they go out of range
     handler_259 = gd.handlers[259]
     gd.handlers[259] = lambda k: handle_edges(handler_259, k, gd.edit_cell, 0, gd.handlers[353]) # up
@@ -85,9 +106,27 @@ def make_mod_form(info, mod, statefilepath):
     gd.values = []
     for y in range(channel_count):
         row = []
-        row.append(channel_names.get(y, "ch " + str(y)))
-        row.append("off")
-        row.append("left")
+        channel_name = channel_names.get(y, "ch " + str(y))
+        row.append(channel_name)
+
+        # Apply saved state if available for this channel
+        if channel_name in saved_state:
+            on_state = saved_state[channel_name].get("on", "off")
+            pan_state = saved_state[channel_name].get("pan", "left")
+            row.append(on_state)
+            row.append(pan_state)
+
+            # Apply the saved state to the actual audio
+            if on_state == "on":
+                send("channel " + str(y) + " volume 4")
+            if pan_state == "right":
+                send("channel " + str(y) + " pan 1")
+        else:
+            row.append("off")
+            row.append("left")
+            # Initialize this channel in the state dictionary
+            grid_interact.state_dict[channel_name] = {"on": "off", "pan": "left"}
+
         gd.values.append(row)
 
     #for c in range(info[0]):
