@@ -7,6 +7,8 @@ To run the app on the device: `./main.sh`
 
 To run the app in dev mode on a laptop: `./dev.sh`
 
+Tested on: Python 3.7.17
+
 ![Photograph of modbay running on hardware](./modbay.png)
 
 # Dependencies
