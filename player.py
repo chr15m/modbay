@@ -42,28 +42,23 @@ def grid_interact(k, edit_cell, values, statefile, channel_names):
     channel = edit_cell[0]
     channel_name = channel_names.get(channel, "ch " + str(channel))
 
-    # Create state dictionary if it doesn't exist
-    if not hasattr(grid_interact, 'state_dict'):
-        grid_interact.state_dict = {}
-
-    # Initialize channel in state dict if needed
-    if channel_name not in grid_interact.state_dict:
-        grid_interact.state_dict[channel_name] = {"on": "off", "pan": "left"}
-
     # handle on/off
     if edit_cell[1] == 1:
         new_value = "off" if value == "on" else "on"
         update_value(values, edit_cell, new_value)
+        # Update the state dictionary
         grid_interact.state_dict[channel_name]["on"] = new_value
         send("channel " + str(channel) + " volume " + str(4 if new_value == "on" else 0))
     # handle pan
     if edit_cell[1] == 2:
         new_value = "left" if value == "right" else "right"
         update_value(values, edit_cell, new_value)
+        # Update the state dictionary
         grid_interact.state_dict[channel_name]["pan"] = new_value
         send("channel " + str(channel) + " pan " + str(1 if new_value == "right" else 0))
 
     # update the statefile - rewrite the entire file
+    log("Writing statefile:", statefile, grid_interact.state_dict)
     with open(statefile, 'w') as f:
         json.dump(grid_interact.state_dict, f)
 
@@ -72,9 +67,8 @@ def make_mod_form(info, mod, statefilepath):
     channel_count = info["channelcount"]
     F = MyForm(name=mod, minimum_columns=20, minimum_lines=20)
 
-    # Reset the state dictionary
-    if hasattr(grid_interact, 'state_dict'):
-        delattr(grid_interact, 'state_dict')
+    # Initialize the state dictionary
+    grid_interact.state_dict = {}
 
     # Load existing state if available
     saved_state = {}
@@ -82,6 +76,8 @@ def make_mod_form(info, mod, statefilepath):
         try:
             with open(statefilepath, 'r') as f:
                 saved_state = json.load(f)
+            # Use the loaded state as our working state
+            grid_interact.state_dict = saved_state.copy()
             log("Loaded saved state from " + statefilepath)
         except Exception as e:
             log("Error loading state: " + str(e))
@@ -128,6 +124,8 @@ def make_mod_form(info, mod, statefilepath):
         else:
             row.append("off")
             row.append("left")
+            # Initialize this channel in the state dictionary
+            grid_interact.state_dict[channel_name] = {"on": "off", "pan": "left"}
 
         gd.values.append(row)
 
