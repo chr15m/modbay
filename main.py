@@ -10,7 +10,7 @@ from datetime import datetime
 from subprocess import check_output, STDOUT
 import struct
 import npyscreen
-from common import MyForm, send, log, s
+from common import MyForm, notify, send, log, s
 from player import make_mod_form
 from modrender import mod_get_info, mod_make_stems
 from fruity import flp_extract, flp_get_info, flp_extract_stems
@@ -22,10 +22,16 @@ def start_mod(modspath, mods, mod, F):
     makedirs(tmpdir, exist_ok=True)
     if mod.endswith(".zip"):
         fruityzip = modspath + "/" + mod
+        npyscreen.blank_terminal()
+        notify("extracting flp", title='Extract')
         flpfile = flp_extract(fruityzip, tmpdir)
         log("Loading flp:", flpfile)
+        npyscreen.blank_terminal()
+        notify("loading flp", title='Load')
         info = flp_get_info(flpfile)
         log("Flp info:", info)
+        npyscreen.blank_terminal()
+        notify("unpack stems", title='Unpack')
         chan_count = min(info["channelcount"], MAX_CHANNELS)
         flp_extract_stems(fruityzip, tmpdir, chan_count)
     else:
@@ -34,7 +40,7 @@ def start_mod(modspath, mods, mod, F):
         log("Loading mod:", info)
         chan_count = min(info["channelcount"], MAX_CHANNELS)
         npyscreen.blank_terminal()
-        npyscreen.notify("rendering " + str(chan_count) + " channels", title='Rendering')
+        notify("rendering " + str(chan_count) + " channels", title='Rendering')
         mod_make_stems(modspath + "/" + mod, tmpdir, chan_count)
         #F.editing = False
         #F.DISPLAY()
