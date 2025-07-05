@@ -4,7 +4,7 @@ import curses
 import re
 from sys import exit, argv
 from os import listdir, makedirs
-from os.path import splitext, exists, isdir
+from os.path import splitext, exists, isdir, join, abspath
 from time import sleep
 from datetime import datetime
 from subprocess import check_output, STDOUT
@@ -33,7 +33,7 @@ def start_mod(modspath, mods, mod, F):
     makedirs("./tmp/rendered", exist_ok=True)
 
     # Get the full path to the mod file
-    mod_path = modspath + "/" + mod
+    mod_path = join(modspath, mod)
 
     # Generate a hash of the mod file to use as the cache key
     file_hash = get_file_hash(mod_path)
@@ -74,7 +74,7 @@ def start_mod(modspath, mods, mod, F):
     else:
         log("Using cached render for " + mod + " at " + tmpdir)
         if mod.endswith(".zip"):
-            flpfile = tmpdir + "/project.flp"  # Assuming this is where flp_extract puts it
+            flpfile = join(tmpdir, "project.flp")  # Assuming this is where flp_extract puts it
             info = flp_get_info(flpfile)
         else:
             info = mod_get_info(mod_path)
@@ -83,8 +83,8 @@ def start_mod(modspath, mods, mod, F):
 
     send("reset")
     for i in range(chan_count):
-        send("channel " + str(i) + " loop " + tmpdir + "/" + str(i) + ".wav")
-    make_mod_form(info, mod, modspath + "/" + mod + "-modbay-state.json")
+        send("channel " + str(i) + " loop " + join(tmpdir, str(i) + ".wav"))
+    make_mod_form(info, mod, join(modspath, mod + "-modbay-state.json"))
 
 def make_mod_list_form(app, modspath):
     F = MyForm(name = "modbay", columns=52, lines=20)
@@ -94,11 +94,38 @@ def make_mod_list_form(app, modspath):
 
     F.add(npyscreen.FixedText, value="Mods:", editable=False)
 
-    mods = []
-    mods = [m for m in listdir("mods") if splitext(m)[1] in [".it", ".xm", ".mod", ".mptm", ".zip"]]
+    ms = F.add(npyscreen.MultiLineAction, max_height=14, value = [], name="Mod", values = [], scroll_exit=True)
 
-    ms = F.add(npyscreen.MultiLineAction, max_height=14, value = [], name="Mod", values = mods, scroll_exit=True)
-    ms.actionHighlighted=lambda item,key: start_mod(modspath, mods, item, F)
+    current_path = abspath(modspath)
+
+    def get_listings(cpath):
+        items = listdir(cpath)
+        dirs = sorted([d for d in items if isdir(join(cpath, d)) and not d.startswith('.')])
+        mods = sorted([m for m in items if splitext(m)[1] in [".it", ".xm", ".mod", ".mptm", ".zip"]])
+
+        listings = []
+        # Note: app.modspath is the root mods directory.
+        if abspath(cpath) != abspath(app.modspath):
+             listings.append("[..]")
+
+        listings.extend(["[" + d + "]" for d in dirs])
+        listings.extend(mods)
+        return listings
+
+    def on_select(item, key):
+        nonlocal current_path
+
+        if item.startswith('[') and item.endswith(']'):
+            dirname = item[1:-1]
+            current_path = abspath(join(current_path, dirname))
+            ms.values = get_listings(current_path)
+            ms.display()
+        else:
+            # It's a mod file
+            start_mod(current_path, None, item, F)
+
+    ms.values = get_listings(current_path)
+    ms.actionHighlighted=on_select
 
     F.edit()
 
