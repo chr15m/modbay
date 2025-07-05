@@ -27,3 +27,24 @@ EOT
  * [`pd`](https://puredata.info/)
 
 `sudo apt install xmp python3 puredata`
+
+# RetroPie launcher
+
+To run this application automatically on boot, you can use the `retropie-launcher.sh` script.
+This script is designed to be called from RetroPie's `autostart.sh` file.
+
+Assuming `retropie-launcher.sh` is located in `/home/pi/modbay`, you can edit `/opt/retropie/configs/all/autostart.sh` on your device to automatically start `modbay`.
+
+To run the application once and then exit to the command line (or Emulation Station if configured), change `autostart.sh` to:
+
+```bash
+/home/pi/modbay/retropie-launcher.sh
+```
+
+If you want the application to restart automatically if it exits (for a kiosk-style setup), you can wrap the command in a `while` loop:
+
+```bash
+while true; do
+  /home/pi/modbay/retropie-launcher.sh
+done
+```
