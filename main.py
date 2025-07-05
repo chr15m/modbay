@@ -39,8 +39,11 @@ def start_mod(modspath, mods, mod, F):
     file_hash = get_file_hash(mod_path)
     log("File hash for " + mod + ": " + file_hash)
 
+    # Create a slug from the filename to avoid issues with spaces and special chars
+    slug = re.sub(r'[^a-zA-Z0-9.-]', '_', splitext(mod)[0])
+
     # Set the output directory based on the hash
-    tmpdir = "./tmp/rendered/" + mod + "-" + file_hash
+    tmpdir = join("./tmp/rendered/", slug + "-" + file_hash)
 
     # Check if we already have rendered this mod
     already_rendered = exists(tmpdir) and isdir(tmpdir)
