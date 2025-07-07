@@ -12,7 +12,7 @@ source "$scriptdir/scriptmodules/helpers.sh"
 source "$scriptdir/scriptmodules/inifuncs.sh"
 #source "$scriptdir/scriptmodules/packages.sh"
 joy2keyStart kcub1 kcuf1 kcuu1 kcud1 0x20 0x0a 0x58 0x59
-./main.sh >> modbay_run.log 2>&1
+./main.sh # >> modbay_run.log 2>&1 # redirect breaks the UI
 joy2keyStop
 echo "Boot script exit"
 sleep 10
