@@ -9,6 +9,7 @@ from time import sleep
 from datetime import datetime
 from subprocess import check_output, STDOUT
 import struct
+import json
 import npyscreen
 import hashlib
 from common import MyForm, notify, send, log, s
@@ -71,14 +72,27 @@ def start_mod(modspath, mods, mod, F):
             npyscreen.blank_terminal()
             notify("rendering " + str(chan_count) + " channels", title='Rendering')
             mod_make_stems(mod_path, tmpdir, chan_count)
+
+        with open(join(tmpdir, "info.json"), "w") as f:
+            json.dump(info, f)
     else:
         log("Using cached render for " + mod + " at " + tmpdir)
         notify("loading...", title='Loading')
-        if mod.endswith(".zip"):
+        infopath = join(tmpdir, "info.json")
+        if exists(infopath):
+            with open(infopath, "r") as f:
+                info = json.load(f)
+            if "channelnames" in info:
+                info["channelnames"] = {int(k): v for k, v in info["channelnames"].items()}
+        elif mod.endswith(".zip"):
             flpfile = next(join(tmpdir, f) for f in listdir(tmpdir) if f.endswith(".flp"))
             info = flp_get_info(flpfile)
+            with open(infopath, "w") as f:
+                json.dump(info, f)
         else:
             info = mod_get_info(mod_path)
+            with open(infopath, "w") as f:
+                json.dump(info, f)
 
         chan_count = min(info["channelcount"], MAX_CHANNELS)
 
