@@ -73,6 +73,7 @@ def start_mod(modspath, mods, mod, F):
             mod_make_stems(mod_path, tmpdir, chan_count)
     else:
         log("Using cached render for " + mod + " at " + tmpdir)
+        notify("loading...", title='Loading')
         if mod.endswith(".zip"):
             flpfile = next(join(tmpdir, f) for f in listdir(tmpdir) if f.endswith(".flp"))
             info = flp_get_info(flpfile)
