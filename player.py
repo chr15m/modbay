@@ -65,7 +65,7 @@ def grid_interact(k, edit_cell, values, statefile, channel_names):
 def make_mod_form(info, mod, statefilepath):
     channel_names = info["channelnames"]
     channel_count = info["channelcount"]
-    F = MyForm(name=mod, minimum_columns=20, minimum_lines=20)
+    F = MyForm(name=mod, columns=52, lines=20)
 
     # Initialize the state dictionary
     grid_interact.state_dict = {}
