@@ -74,7 +74,7 @@ def start_mod(modspath, mods, mod, F):
     else:
         log("Using cached render for " + mod + " at " + tmpdir)
         if mod.endswith(".zip"):
-            flpfile = join(tmpdir, "project.flp")  # Assuming this is where flp_extract puts it
+            flpfile = next(join(tmpdir, f) for f in listdir(tmpdir) if f.endswith(".flp"))
             info = flp_get_info(flpfile)
         else:
             info = mod_get_info(mod_path)
